@@ -1,0 +1,36 @@
+name: Security Scan
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
+
+jobs:
+    analyze:
+        runs-on: ubuntu-latest
+
+        # CRITICAL: These permissions are required for the action to
+        # post SARIF alerts to the Security Tab and post inline PR comments!
+        permissions:
+            contents: read
+            security-events: write
+            pull-requests: write
+            issues: write
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Run GrepVF Security Gate
+              # Point to the tag you just released
+              uses: Dream-World-Coder/grepVF@v1.1.1
+              with:
+                  llm-api-key: ${{ secrets.LLM_API_KEY }}
+
+                  # Optional: Override the threshold (defaults to 'critical')
+                  fail-on: "high"
+
+                  # Optional: Pass any extra arguments to the engine
+                  # Note: --zone-detect is already included by default in action.yml
+                  args: "--zone-detect --patch"
